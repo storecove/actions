@@ -23,3 +23,5 @@ runs:
 
     - shell: bash
       run: mvn -B deploy -DskipTests -f ${{ inputs.pom-file }}
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
