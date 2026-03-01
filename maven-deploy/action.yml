@@ -11,6 +11,9 @@ inputs:
   token:
     description: Token for GitHub Packages auth (needs write:packages). Defaults to GITHUB_TOKEN.
     default: ""
+  min-versions-to-keep:
+    description: Minimum number of package versions to keep (0 to disable pruning)
+    default: "5"
 
 runs:
   using: composite
@@ -28,3 +31,20 @@ runs:
       run: mvn -B deploy -DskipTests -f ${{ inputs.pom-file }}
       env:
         GITHUB_TOKEN: ${{ inputs.token != '' && inputs.token || github.token }}
+
+    - id: pkg-info
+      if: ${{ inputs.min-versions-to-keep != '0' }}
+      shell: bash
+      run: |
+        POM="${{ inputs.pom-file }}"
+        GROUP_ID=$(mvn -q -f "$POM" help:evaluate -Dexpression=project.groupId -DforceStdout)
+        ARTIFACT_ID=$(mvn -q -f "$POM" help:evaluate -Dexpression=project.artifactId -DforceStdout)
+        echo "package-name=${GROUP_ID}.${ARTIFACT_ID}" >> "$GITHUB_OUTPUT"
+
+    - uses: actions/delete-package-versions@v5
+      if: ${{ inputs.min-versions-to-keep != '0' }}
+      with:
+        package-name: ${{ steps.pkg-info.outputs.package-name }}
+        package-type: maven
+        min-versions-to-keep: ${{ inputs.min-versions-to-keep }}
+        token: ${{ github.token }}
