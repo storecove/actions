@@ -8,6 +8,9 @@ inputs:
   pom-file:
     description: Path to pom.xml
     default: pom.xml
+  token:
+    description: Token for GitHub Packages auth (needs write:packages). Defaults to GITHUB_TOKEN.
+    default: ""
 
 runs:
   using: composite
@@ -24,4 +27,4 @@ runs:
     - shell: bash
       run: mvn -B deploy -DskipTests -f ${{ inputs.pom-file }}
       env:
-        GITHUB_TOKEN: ${{ github.token }}
+        GITHUB_TOKEN: ${{ inputs.token != '' && inputs.token || github.token }}
