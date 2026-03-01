@@ -25,6 +25,7 @@ runs:
         server-password: GITHUB_TOKEN
 
     - shell: bash
-      run: mvn -B deploy -DskipTests -f ${{ inputs.pom-file }}
+      run: mvn -B deploy -DskipTests -f "$POM_FILE"
       env:
+        POM_FILE: ${{ inputs.pom-file }}
         GITHUB_TOKEN: ${{ inputs.token != '' && inputs.token || github.token }}
