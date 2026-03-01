@@ -1,0 +1,25 @@
+name: Maven Deploy to GitHub Packages
+description: Build and deploy Maven artifacts to GitHub Packages
+
+inputs:
+  java-version:
+    description: JDK version
+    default: "21"
+  pom-file:
+    description: Path to pom.xml
+    default: pom.xml
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: ${{ inputs.java-version }}
+        cache: maven
+        server-id: github
+        server-username: GITHUB_ACTOR
+        server-password: GITHUB_TOKEN
+
+    - shell: bash
+      run: mvn -B deploy -DskipTests -f ${{ inputs.pom-file }}
