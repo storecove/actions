@@ -1,0 +1,35 @@
+name: K8s Deploy Diagnostics
+description: Get pod status, describe, and logs for failed K8s deployments
+
+inputs:
+  namespace:
+    description: Kubernetes namespace
+    required: true
+  app-label:
+    description: Value of the app= label selector
+    required: true
+  tail-lines:
+    description: Number of log lines to retrieve
+    default: "200"
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: kubectl get pods -n "$NAMESPACE" -l "app=$APP_LABEL" -o wide
+      env:
+        NAMESPACE: ${{ inputs.namespace }}
+        APP_LABEL: ${{ inputs.app-label }}
+
+    - shell: bash
+      run: kubectl describe pods -n "$NAMESPACE" -l "app=$APP_LABEL"
+      env:
+        NAMESPACE: ${{ inputs.namespace }}
+        APP_LABEL: ${{ inputs.app-label }}
+
+    - shell: bash
+      run: kubectl logs -n "$NAMESPACE" -l "app=$APP_LABEL" --tail="$TAIL_LINES"
+      env:
+        NAMESPACE: ${{ inputs.namespace }}
+        APP_LABEL: ${{ inputs.app-label }}
+        TAIL_LINES: ${{ inputs.tail-lines }}
